@@ -1,8 +1,7 @@
-// src/main.rs
-#![no_std] // 不链接Rust标准库
-#![no_main] // 禁用所有Rust层级的入口点
+#![no_std]
+#![no_main]
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
+#![test_runner(blog_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
