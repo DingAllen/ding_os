@@ -4,8 +4,8 @@
 #![test_runner(blog_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-use core::panic::PanicInfo;
 use blog_os::println;
+use core::panic::PanicInfo;
 
 /// 这个函数将在panic时被调用
 // our existing panic handler
@@ -32,9 +32,9 @@ pub extern "C" fn _start() -> ! {
     blog_os::init();
 
     // trigger a page fault
-    unsafe {
-        *(0xdeadbeef as *mut u64) = 42;
-    };
+    // unsafe {
+    //     *(0xdeadbeef as *mut u64) = 42;
+    // };
 
     // as before
     #[cfg(test)]
