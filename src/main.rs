@@ -36,7 +36,20 @@ pub extern "C" fn _start() -> ! {
     //     *(0xdeadbeef as *mut u64) = 42;
     // };
 
-    // as before
+    let ptr = 0x203a8b as *mut u32;
+
+    // read from a code page
+    unsafe {
+        let x = *ptr;
+    }
+    println!("read worked");
+
+    // write to a code page
+    unsafe {
+        *ptr = 42;
+    }
+    println!("write worked");
+
     #[cfg(test)]
     test_main();
 
