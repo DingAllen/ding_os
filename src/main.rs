@@ -5,7 +5,11 @@
 #![reexport_test_harness_main = "test_main"]
 
 use blog_os::println;
+use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
+use x86_64::structures::paging::PageTable;
+
+entry_point!(kernel_main);
 
 /// 这个函数将在panic时被调用
 // our existing panic handler
@@ -25,31 +29,35 @@ fn panic(info: &PanicInfo) -> ! {
 
 // static HELLO: &[u8] = b"What an amazing world,I love you!My name is DingKaiXing.";
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
+    use blog_os::memory;
+    use x86_64::{structures::paging::Translate, VirtAddr};
 
+    println!("Hello World{}", "!");
     blog_os::init();
 
-    // trigger a page fault
-    // unsafe {
-    //     *(0xdeadbeef as *mut u64) = 42;
-    // };
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mapper = unsafe { memory::init(phys_mem_offset) };
 
-    let ptr = 0x203a8b as *mut u32;
+    let addresses = [
+        // the identity-mapped vga buffer page
+        0xb8000,
+        // some code page
+        0x201008,
+        // some stack page
+        0x0100_0020_1a10,
+        // virtual address mapped to physical address 0
+        boot_info.physical_memory_offset,
+    ];
 
-    // read from a code page
-    unsafe {
-        let x = *ptr;
+    for &address in &addresses {
+        let virt = VirtAddr::new(address);
+        // new: use the `mapper.translate_addr` method
+        let phys = mapper.translate_addr(virt);
+        println!("{:?} -> {:?}", virt, phys.unwrap());
     }
-    println!("read worked");
 
-    // write to a code page
-    unsafe {
-        *ptr = 42;
-    }
-    println!("write worked");
-
+    // as before
     #[cfg(test)]
     test_main();
 
